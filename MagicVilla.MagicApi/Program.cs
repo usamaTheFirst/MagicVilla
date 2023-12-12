@@ -1,5 +1,8 @@
+using MagicVilla.MagicApi;
 using MagicVilla.MagicApi.Data;
 using MagicVilla.MagicApi.Logging;
+using MagicVilla.MagicApi.Repository;
+using MagicVilla.MagicApi.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -11,8 +14,11 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.Host.UseSerilog();
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddDbContext<ApplicationDbContext>(options=> options.UseSqlServer(builder.Configuration.GetConnectionString(("ApplicationDbContext"))));
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddScoped<IVillaRepository, VillaRepository>();
+builder.Services.AddScoped<IVillaNumberRepository, VillaNumberRepository>();
+
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<ILogging,Logging>();
 var app = builder.Build();
