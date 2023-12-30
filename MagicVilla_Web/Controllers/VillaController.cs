@@ -5,6 +5,8 @@ using MagicVilla_Web.Services.IServices;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
+using MagicVilla_Utility;
 
 namespace MagicVilla_Web.Controllers
 {
@@ -21,7 +23,7 @@ namespace MagicVilla_Web.Controllers
         public async Task<IActionResult> IndexVilla()
         {
             List<VillaDTO> list = new();
-            var response = await _villaService.GetAllAsync<APIResponse>();
+            var response = await _villaService.GetAllAsync<APIResponse>(HttpContext.Session.GetString(SD.SessionToken));
             if(response != null && response.IsSuccess)
             {
                 list = JsonConvert.DeserializeObject<List<VillaDTO>>(Convert.ToString(response.Result));
@@ -29,6 +31,7 @@ namespace MagicVilla_Web.Controllers
             return View(list);
         }
 
+        [Authorize(Roles ="admin")]
         public async Task<IActionResult> CreateVilla()
         {
             
@@ -36,11 +39,13 @@ namespace MagicVilla_Web.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+
         public async Task<IActionResult> CreateVilla(VillaCreateDTO dto)
         {
             if (ModelState.IsValid)
             {
-                var response = await _villaService.CreateAsync<APIResponse>(dto);
+                var response = await _villaService.CreateAsync<APIResponse>(dto, HttpContext.Session.GetString(SD.SessionToken));
                 if (response != null && response.IsSuccess)
                 {
                     return RedirectToAction(nameof(IndexVilla));
@@ -52,10 +57,11 @@ namespace MagicVilla_Web.Controllers
         }
 
 
+        [Authorize(Roles = "admin")]
 
         public async Task<IActionResult> UpdateVilla(int villaID)
         {
-            var response = await _villaService.GetAsync<APIResponse>(villaID);
+            var response = await _villaService.GetAsync<APIResponse>(villaID, HttpContext.Session.GetString(SD.SessionToken));
             if (response != null && response.IsSuccess)
             {
                 VillaDTO villaDTO = JsonConvert.DeserializeObject<VillaDTO>(Convert.ToString(response.Result));
@@ -66,11 +72,13 @@ namespace MagicVilla_Web.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+
         public async Task<IActionResult> UpdateVilla(VillaUpdateDTO dto)
         {
             if (ModelState.IsValid)
             {
-                var response = await _villaService.UpdateAsync<APIResponse>(dto);
+                var response = await _villaService.UpdateAsync<APIResponse>(dto, HttpContext.Session.GetString(SD.SessionToken));
                 if (response != null && response.IsSuccess)
                 {
                     return RedirectToAction(nameof(IndexVilla));
@@ -81,10 +89,11 @@ namespace MagicVilla_Web.Controllers
             return View(dto);
         }
 
+        [Authorize(Roles = "admin")]
 
         public async Task<IActionResult> DeleteVilla(int villaID)
         {
-            var response = await _villaService.GetAsync<APIResponse>(villaID);
+            var response = await _villaService.GetAsync<APIResponse>(villaID, HttpContext.Session.GetString(SD.SessionToken));
             if (response != null && response.IsSuccess)
             {
                 VillaDTO villaDTO = JsonConvert.DeserializeObject<VillaDTO>(Convert.ToString(response.Result));
@@ -95,11 +104,13 @@ namespace MagicVilla_Web.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+
         public async Task<IActionResult> DeleteVilla(VillaDTO dto)
         {
             if (ModelState.IsValid)
             {
-                var response = await _villaService.DeleteAsync<APIResponse>(dto.Id);
+                var response = await _villaService.DeleteAsync<APIResponse>(dto.Id, HttpContext.Session.GetString(SD.SessionToken));
                 if (response != null && response.IsSuccess)
                 {
                     return RedirectToAction(nameof(IndexVilla));

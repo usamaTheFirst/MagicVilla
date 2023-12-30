@@ -1,4 +1,5 @@
 ﻿using MagicVilla.MagicApi.Model;
+using MagicVilla.MagicApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace MagicVilla.MagicApi.Data
@@ -79,5 +80,7 @@ namespace MagicVilla.MagicApi.Data
         }
        public DbSet<Villa> Villas { get; set; }
         public DbSet<VillaNumber> VillaNumbers { get; set; }
+        public DbSet<LocalUser> LocalUsers{ get; set; }
+
     }
 }

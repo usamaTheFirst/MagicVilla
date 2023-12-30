@@ -8,7 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Cryptography;
 
-namespace MagicVilla.MagicApi.Controllers
+namespace MagicVilla.MagicApi.Controllers.v1
 {
     [ApiController]
     [Route("api/[controller]")]
