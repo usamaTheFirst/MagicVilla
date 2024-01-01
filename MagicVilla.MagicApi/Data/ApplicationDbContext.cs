@@ -1,10 +1,11 @@
 ﻿using MagicVilla.MagicApi.Model;
 using MagicVilla.MagicApi.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace MagicVilla.MagicApi.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options):base(options)
         {
@@ -72,15 +73,15 @@ namespace MagicVilla.MagicApi.Data
         CreatedDate = DateTime.Now,
         ImageURL = "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1374&auto=format&fit=crop",
         Amenities = "Fireplace, wood-burning oven, hammock"
-    }
-
-
-           
+    }    
 );
+            base.OnModelCreating(modelBuilder);
         }
        public DbSet<Villa> Villas { get; set; }
         public DbSet<VillaNumber> VillaNumbers { get; set; }
         public DbSet<LocalUser> LocalUsers{ get; set; }
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+
 
     }
 }

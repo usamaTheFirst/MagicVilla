@@ -37,12 +37,12 @@ namespace MagicVilla.MagicApi.Controllers.v1
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
 
-        public async Task<ActionResult<APIResponse>> GetVillas()
+        public async Task<ActionResult<APIResponse>> GetVillas(int pageSize = 0, int pageNumber = 1)
         {
             try
             {
                 _logger.Log("Getting all the villas", "");
-                IEnumerable<Villa> villaList = await _dbVilla.GetAllAsync();
+                IEnumerable<Villa> villaList = await _dbVilla.GetAllAsync(pageSize:pageSize, pageNumber:pageNumber);
                 _response.Result = _mapper.Map<List<VillaDTO>>(villaList);
                 _response.StatusCode = HttpStatusCode.OK;
 

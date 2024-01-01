@@ -1,9 +1,11 @@
 using MagicVilla.MagicApi;
 using MagicVilla.MagicApi.Data;
 using MagicVilla.MagicApi.Logging;
+using MagicVilla.MagicApi.Models;
 using MagicVilla.MagicApi.Repository;
 using MagicVilla.MagicApi.Repository.IRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -17,11 +19,19 @@ var builder = WebApplication.CreateBuilder(args);
 //Log.Logger = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.
 // File("logs/villaLogs.txt", rollingInterval : RollingInterval.Day).CreateLogger();
 //builder.Host.UseSerilog();
-builder.Services.AddControllers().AddNewtonsoftJson();
+builder.Services.AddControllers(options =>
+{
+    options.CacheProfiles.Add("Default30", new Microsoft.AspNetCore.Mvc.CacheProfile
+    {
+        Duration = 30
+    }); 
+}).AddNewtonsoftJson();
+builder.Services.AddIdentity<ApplicationUser,IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddDbContext<ApplicationDbContext>(options=> options.UseSqlServer(builder.Configuration.GetConnectionString(("ApplicationDbContext"))));
 builder.Services.AddScoped<IVillaRepository, VillaRepository>();
 builder.Services.AddScoped<IVillaNumberRepository, VillaNumberRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddResponseCaching();
 builder.Services.AddApiVersioning(options =>
 {
     options.AssumeDefaultVersionWhenUnspecified = true;
@@ -32,6 +42,7 @@ builder.Services.AddApiVersioning(options =>
 {
     options.GroupNameFormat = "'v'VVV";
     options.SubstituteApiVersionInUrl = true;
+    options.AddApiVersionParametersWhenVersionNeutral = true;
 
 });
 
@@ -51,7 +62,7 @@ builder.Services.AddAuthentication(x => { x.DefaultAuthenticateScheme = JwtBeare
 
     };
 }) ;
-builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddEndpointsApiExplorer( );
 builder.Services.AddAutoMapper(typeof(MappingConfig));
 builder.Services.AddSwaggerGen(options =>
 {
@@ -82,18 +93,36 @@ builder.Services.AddSwaggerGen(options =>
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Version = "v1.0",
-        Title = "Magic Villa",
+        Title = "Magic Villa V1",
         Description = "API to manage Villa",
-        TermsOfService = new Uri("https://www.usamafiaz.online")
-
-    }) ;
+        TermsOfService = new Uri("https://example.com/terms"),
+        Contact = new OpenApiContact
+        {
+            Name = "Dotnetmastery",
+            Url = new Uri("https://dotnetmastery.com")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Example License",
+            Url = new Uri("https://example.com/license")
+        }
+    });
     options.SwaggerDoc("v2", new OpenApiInfo
     {
         Version = "v2.0",
-        Title = "Magic Villa",
+        Title = "Magic Villa V2",
         Description = "API to manage Villa",
-        TermsOfService = new Uri("https://www.usamafiaz.online")
-
+        TermsOfService = new Uri("https://example.com/terms"),
+        Contact = new OpenApiContact
+        {
+            Name = "Dotnetmastery",
+            Url = new Uri("https://dotnetmastery.com")
+        },
+        License = new OpenApiLicense
+        {
+            Name = "Example License",
+            Url = new Uri("https://example.com/license")
+        }
     });
 
 });

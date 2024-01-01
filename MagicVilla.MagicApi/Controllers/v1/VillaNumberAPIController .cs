@@ -34,6 +34,9 @@ namespace MagicVilla.MagicApi.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ResponseCache(Duration =30)]
         public async Task<ActionResult<APIResponse>> GetVillaNumbers()
         {
             try

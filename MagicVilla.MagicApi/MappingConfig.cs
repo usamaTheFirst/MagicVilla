@@ -24,6 +24,8 @@ namespace MagicVilla.MagicApi
             CreateMap<VillaNumberDTO, VillaNumberCreateDTO>().ReverseMap();
             CreateMap<VillaNumberDTO, VillaNumberUpdateDTO>().ReverseMap();
             CreateMap<LocalUser, RegistrationRequestDTO>().ReverseMap();
+            CreateMap<ApplicationUser, UserDTO>().ReverseMap();
+
 
 
 

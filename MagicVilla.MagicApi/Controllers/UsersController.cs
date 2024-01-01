@@ -5,7 +5,7 @@ using MagicVilla.MagicApi.Repository.IRepository;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
-namespace MagicVilla.MagicApi.Controllers.v1
+namespace MagicVilla.MagicApi.Controllers
 {
     [Route("api/v{version:apiVersion}/UsersAuth")]
     [ApiController]
@@ -27,7 +27,7 @@ namespace MagicVilla.MagicApi.Controllers.v1
         {
 
             var loginResponse = await _userRepository.Login(loginRequest);
-            if (loginResponse.LocalUser == null || string.IsNullOrEmpty(loginResponse.Token))
+            if (loginResponse.User == null || string.IsNullOrEmpty(loginResponse.Token))
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
@@ -44,7 +44,7 @@ namespace MagicVilla.MagicApi.Controllers.v1
         public async Task<IActionResult> Register([FromBody] RegistrationRequestDTO registrationRequest)
         {
 
-            bool isUniqueName = _userRepository.IsUniqueUser(registrationRequest.Username);
+            bool isUniqueName = _userRepository.IsUniqueUser(registrationRequest.UserName);
             if (!isUniqueName)
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;
