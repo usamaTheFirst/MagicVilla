@@ -21,10 +21,10 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.Host.UseSerilog();
 builder.Services.AddControllers(options =>
 {
-    options.CacheProfiles.Add("Default30", new Microsoft.AspNetCore.Mvc.CacheProfile
-    {
-        Duration = 30
-    }); 
+    //options.CacheProfiles.Add("Default30", new Microsoft.AspNetCore.Mvc.CacheProfile
+    //{
+    //    Duration = 30
+    //}); 
 }).AddNewtonsoftJson();
 builder.Services.AddIdentity<ApplicationUser,IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddDbContext<ApplicationDbContext>(options=> options.UseSqlServer(builder.Configuration.GetConnectionString(("ApplicationDbContext"))));
@@ -35,7 +35,7 @@ builder.Services.AddResponseCaching();
 builder.Services.AddApiVersioning(options =>
 {
     options.AssumeDefaultVersionWhenUnspecified = true;
-    options.DefaultApiVersion = new Asp.Versioning.ApiVersion(1, 0);
+    options.DefaultApiVersion = new Asp.Versioning.ApiVersion(2, 0);
     options.ReportApiVersions = true;
 
 }).AddApiExplorer(options =>
@@ -140,7 +140,7 @@ if (app.Environment.IsDevelopment())
 
     });
 }
-
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

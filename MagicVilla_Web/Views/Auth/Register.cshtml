@@ -17,7 +17,9 @@
                 <input asp-for="Name" type="text" class="form-control" placeholder="Name" />
 
             </div><div class="col-6 offset-3 pb-2">
-                <input asp-for="Role" type="text" class="form-control" placeholder="Role" />
+                <select asp-for="Role" type="text" class="form-select" asp-items="@ViewBag.RoleList" placeholder="Role" >
+                <option disabled selected>--Select Role--</option>  
+                </select>
 
             </div>
             <div class="col-6 offset-3 pb-2">

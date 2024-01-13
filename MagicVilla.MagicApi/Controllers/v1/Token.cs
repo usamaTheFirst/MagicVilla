@@ -80,5 +80,11 @@ namespace MagicVilla.MagicApi.Controllers.v1
 
             return Ok(new { Message = "Data retrieved successfully" });
         }
+        [HttpGet("tester")]
+        public ActionResult Tester()
+        {
+            HttpContext.Response.Cookies.Append("Tester","usama");
+            return Ok("OK");
+        }
     }
 }

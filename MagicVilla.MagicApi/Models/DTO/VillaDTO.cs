@@ -15,8 +15,9 @@ namespace MagicVilla.MagicApi.Model.DTO
             public double Rate { get; set; }
             public int Sqft { get; set; }
             public int Occupancy { get; set; }
+        public IFormFile? Image { get; set; }
             public string ImageURL { get; set; }
-            public string Amenities { get; set; }
+        public string Amenities { get; set; }
         }
     }
 

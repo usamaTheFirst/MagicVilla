@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using MagicVilla.MagicApi.Data;
 using MagicVilla.MagicApi.Logging;
 using MagicVilla.MagicApi.Model;
@@ -9,10 +10,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
-namespace MagicVilla.MagicApi.Controllers
+namespace MagicVilla.MagicApi.Controllers.v1
 {
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
+
     public class VillaNumberAPIController : ControllerBase
     {
         private readonly ILogging _logger;

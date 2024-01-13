@@ -4,6 +4,7 @@ using MagicVilla.MagicApi.Models;
 using MagicVilla.MagicApi.Models.DTO;
 using MagicVilla.MagicApi.Repository.IRepository;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -37,41 +38,28 @@ namespace MagicVilla.MagicApi.Repository
         }
 
 
-        public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequest)
+        public async Task<TokenDTO> Login(LoginRequestDTO loginRequest)
         {
             var user = _db.ApplicationUsers.FirstOrDefault(u => u.UserName.ToLower() == loginRequest.UserName.ToLower());
             bool isValid =await _userManager.CheckPasswordAsync(user, loginRequest.Password);
             if (user == null)
             {
-                return new LoginResponseDTO
+                return new TokenDTO
                 {
-                    Token = "",
-                    User = null
+                    AccessToken = "",
 
                 }; ;
             }
-            var roles = await _userManager.GetRolesAsync(user);
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
+            var jwtTokenId = $"JTI{Guid.NewGuid()}";
+            var token = await GetAccessToken(user, jwtTokenId);
+            var refreshToken = await CreateNewRefreshToken(user.Id, jwtTokenId);
+            TokenDTO tokenDTO = new TokenDTO
             {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, user.UserName.ToString()),
-                    new Claim(ClaimTypes.Role, roles.FirstOrDefault())
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-
-            LoginResponseDTO loginResponse = new LoginResponseDTO
-            {
-                Token = tokenHandler.WriteToken(token),
-                User = _mapper.Map<UserDTO>(user),
+                AccessToken = token, 
+                RefreshToken = refreshToken
 
             };
-            return loginResponse;
+            return tokenDTO;
 
         }
 
@@ -108,6 +96,113 @@ namespace MagicVilla.MagicApi.Repository
 
             }
             return new UserDTO();
+        }
+
+
+        private async Task<string> GetAccessToken(ApplicationUser user, string jwtTokenId)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_secret);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, user.UserName.ToString()),
+                    new Claim(ClaimTypes.Role, roles.FirstOrDefault()),
+                    new Claim(JwtRegisteredClaimNames.Jti, jwtTokenId),
+                    new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+
+
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(60),
+                SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
+
+       public async Task<TokenDTO> RefreshAccessToken(TokenDTO token)
+        {
+
+            var exisitingRefreshToken = await _db.RefreshTokens.FirstOrDefaultAsync(u => u.Refresh_Token == token.RefreshToken);
+            if(exisitingRefreshToken == null)
+            {
+                return new TokenDTO();
+            }
+            var accessTokenData = GetAccessTokenData(token.AccessToken);
+            if (!accessTokenData.isSuccessful || accessTokenData.userId != exisitingRefreshToken.UserId
+                || accessTokenData.tokenId != exisitingRefreshToken.JwtTokenId)
+            {
+                exisitingRefreshToken.IsValid = false;
+                _db.SaveChanges();
+                return new TokenDTO();
+
+            }
+            if (!exisitingRefreshToken.IsValid)
+            {
+                var chainRecords = _db.RefreshTokens.Where(u => u.UserId == exisitingRefreshToken.UserId && u.JwtTokenId == exisitingRefreshToken.JwtTokenId).ToList();
+
+                foreach (var record in chainRecords)
+                {
+                    record.IsValid = false;
+                }
+                _db.UpdateRange(chainRecords);
+                _db.SaveChangesAsync();
+            }
+   
+            if (exisitingRefreshToken.ExpiresAt < DateTime.UnixEpoch)
+            {
+                exisitingRefreshToken.IsValid = false;
+                _db.SaveChanges();
+                return new TokenDTO();
+
+            }
+            var newRefreshToken = await CreateNewRefreshToken(exisitingRefreshToken.UserId, exisitingRefreshToken.JwtTokenId);
+            exisitingRefreshToken.IsValid = false;
+            _db.SaveChanges();
+            var applicationUser = await _db.ApplicationUsers.FirstOrDefaultAsync(u => u.Id == exisitingRefreshToken.UserId);
+            if(applicationUser == null)
+            {
+                return new TokenDTO();
+            }
+            var newAccessToken = await GetAccessToken(applicationUser, exisitingRefreshToken.JwtTokenId);
+            return new TokenDTO()
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken
+            };
+        }
+        private async Task<string> CreateNewRefreshToken(string userId, string tokenId)
+        {
+            RefreshToken refreshToken = new()
+            {
+                IsValid = true,
+                UserId = userId,
+                JwtTokenId = tokenId,
+                ExpiresAt = DateTime.UtcNow.AddDays(30),
+                Refresh_Token = Guid.NewGuid() + "-" + Guid.NewGuid(),
+            };
+             await _db.RefreshTokens.AddAsync(refreshToken);
+           await _db.SaveChangesAsync();
+            return refreshToken.Refresh_Token;
+                
+        }
+        private (bool isSuccessful,string userId, string tokenId) GetAccessTokenData(string accessToken)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwt = tokenHandler.ReadJwtToken(accessToken);
+                var jwtTokenId = jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Jti).Value;
+                var userId = jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Sub).Value;
+                return (true, userId, jwtTokenId);
+
+            }
+            catch (Exception ex)
+            {
+                return (false, null, null);
+            }
         }
     }
 }

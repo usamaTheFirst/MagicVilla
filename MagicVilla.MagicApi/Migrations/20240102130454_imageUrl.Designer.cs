@@ -4,6 +4,7 @@ using MagicVilla.MagicApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MagicVilla.MagicApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240102130454_imageUrl")]
+    partial class imageUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,66 +75,66 @@ namespace MagicVilla.MagicApi.Migrations
                         {
                             Id = 1,
                             Amenities = "Swimming pool, jacuzzi, sauna, gym",
-                            CreatedDate = new DateTime(2024, 1, 9, 19, 57, 24, 676, DateTimeKind.Local).AddTicks(4482),
+                            CreatedDate = new DateTime(2024, 1, 2, 18, 4, 53, 814, DateTimeKind.Local).AddTicks(2561),
                             Details = "This is a beautiful villa with stunning views.",
                             ImageURL = "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1374&auto=format&fit=crop",
                             Name = "Villa 1",
                             Occupancy = 4,
                             Rate = 1000.0,
                             Sqft = 2000,
-                            UpdatedDate = new DateTime(2024, 1, 9, 19, 57, 24, 676, DateTimeKind.Local).AddTicks(4477)
+                            UpdatedDate = new DateTime(2024, 1, 2, 18, 4, 53, 814, DateTimeKind.Local).AddTicks(2556)
                         },
                         new
                         {
                             Id = 2,
                             Amenities = "Garden, barbecue, fireplace",
-                            CreatedDate = new DateTime(2024, 1, 9, 19, 57, 24, 676, DateTimeKind.Local).AddTicks(4487),
+                            CreatedDate = new DateTime(2024, 1, 2, 18, 4, 53, 814, DateTimeKind.Local).AddTicks(2566),
                             Details = "This is a cozy villa with a private garden.",
                             ImageURL = "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1374&auto=format&fit=crop",
                             Name = "Villa 2",
                             Occupancy = 2,
                             Rate = 800.0,
                             Sqft = 1500,
-                            UpdatedDate = new DateTime(2024, 1, 9, 19, 57, 24, 676, DateTimeKind.Local).AddTicks(4485)
+                            UpdatedDate = new DateTime(2024, 1, 2, 18, 4, 53, 814, DateTimeKind.Local).AddTicks(2564)
                         },
                         new
                         {
                             Id = 3,
                             Amenities = "Rooftop terrace, city views, outdoor kitchen",
-                            CreatedDate = new DateTime(2024, 1, 9, 19, 57, 24, 676, DateTimeKind.Local).AddTicks(4490),
+                            CreatedDate = new DateTime(2024, 1, 2, 18, 4, 53, 814, DateTimeKind.Local).AddTicks(2569),
                             Details = "This is a modern villa with a rooftop terrace.",
                             ImageURL = "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1374&auto=format&fit=crop",
                             Name = "Villa 3",
                             Occupancy = 6,
                             Rate = 1200.0,
                             Sqft = 2500,
-                            UpdatedDate = new DateTime(2024, 1, 9, 19, 57, 24, 676, DateTimeKind.Local).AddTicks(4488)
+                            UpdatedDate = new DateTime(2024, 1, 2, 18, 4, 53, 814, DateTimeKind.Local).AddTicks(2568)
                         },
                         new
                         {
                             Id = 4,
                             Amenities = "Private pool, ocean views, butler service",
-                            CreatedDate = new DateTime(2024, 1, 9, 19, 57, 24, 676, DateTimeKind.Local).AddTicks(4493),
+                            CreatedDate = new DateTime(2024, 1, 2, 18, 4, 53, 814, DateTimeKind.Local).AddTicks(2571),
                             Details = "This is a luxurious villa with a private pool.",
                             ImageURL = "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1374&auto=format&fit=crop",
                             Name = "Villa 4",
                             Occupancy = 8,
                             Rate = 1500.0,
                             Sqft = 3000,
-                            UpdatedDate = new DateTime(2024, 1, 9, 19, 57, 24, 676, DateTimeKind.Local).AddTicks(4491)
+                            UpdatedDate = new DateTime(2024, 1, 2, 18, 4, 53, 814, DateTimeKind.Local).AddTicks(2570)
                         },
                         new
                         {
                             Id = 5,
                             Amenities = "Fireplace, wood-burning oven, hammock",
-                            CreatedDate = new DateTime(2024, 1, 9, 19, 57, 24, 676, DateTimeKind.Local).AddTicks(4496),
+                            CreatedDate = new DateTime(2024, 1, 2, 18, 4, 53, 814, DateTimeKind.Local).AddTicks(2574),
                             Details = "This is a charming villa with a rustic feel.",
                             ImageURL = "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?q=80&w=1374&auto=format&fit=crop",
                             Name = "Villa 5",
                             Occupancy = 3,
                             Rate = 700.0,
                             Sqft = 1200,
-                            UpdatedDate = new DateTime(2024, 1, 9, 19, 57, 24, 676, DateTimeKind.Local).AddTicks(4495)
+                            UpdatedDate = new DateTime(2024, 1, 2, 18, 4, 53, 814, DateTimeKind.Local).AddTicks(2573)
                         });
                 });
 
@@ -256,37 +259,6 @@ namespace MagicVilla.MagicApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("LocalUsers");
-                });
-
-            modelBuilder.Entity("MagicVilla.MagicApi.Models.RefreshToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ExpiresAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsValid")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("JwtTokenId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Refresh_Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
