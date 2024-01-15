@@ -23,13 +23,15 @@ namespace MagicVilla_Web.Services
         private readonly ITokenProvider _tokenProvider;
         private readonly string VillaUrl;
         private readonly IHttpContextAccessor httpContextAccessor;
-        public BaseService(IHttpClientFactory httpClient, ITokenProvider tokenProvider, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        private readonly IApiMessageRequestBuilder messageRequestBuilder;
+        public BaseService(IHttpClientFactory httpClient, ITokenProvider tokenProvider, IConfiguration configuration, IHttpContextAccessor httpContextAccessor,IApiMessageRequestBuilder requestBuilder)
         {
             this.responseModel = new();
             _httpClient = httpClient;
             _tokenProvider = tokenProvider;
             VillaUrl = configuration.GetValue<string>("ServiceUrls:VillaAPI");
             this.httpContextAccessor = httpContextAccessor;
+            messageRequestBuilder = requestBuilder;
 
         }
 
@@ -41,102 +43,75 @@ namespace MagicVilla_Web.Services
 
                 var messageFactory = () =>
                 {
-                    HttpRequestMessage message = new();
-                    if (apiRequest.ContentType == SD.ContentType.MultipartFormData)
-                    {
-                        message.Headers.Add("Accept", "*/*");
-
-                    }
-                    else
-                    {
-                        message.Headers.Add("Accept", "application/json");
-
-                    }
-                    message.RequestUri = new Uri(apiRequest.Url);
-                    if (apiRequest.ContentType == SD.ContentType.MultipartFormData)
-                    {
-                        var content = new MultipartFormDataContent();
-
-                        foreach (var prop in apiRequest.Data.GetType().GetProperties())
-                        {
-                            var value = prop.GetValue(apiRequest.Data);
-                            if (value is FormFile)
-                            {
-                                var file = (FormFile)value;
-                                if (file != null)
-                                {
-                                    content.Add(new StreamContent(file.OpenReadStream()), prop.Name, file.FileName);
-                                }
-                            }
-                            else
-                            {
-                                content.Add(new StringContent(value == null ? "" : value.ToString()), prop.Name);
-                            }
-                        }
-                        message.Content = content;
-                    }
-                    else
-                    {
-                        if (apiRequest.Data != null)
-                        {
-                            message.Content = new StringContent(JsonConvert.SerializeObject(apiRequest.Data),
-                                encoding: Encoding.UTF8, "application/json");
-                        }
-                    }
-
-                    switch (apiRequest.ApiType)
-                    {
-                        case SD.ApiType.GET:
-                            message.Method = HttpMethod.Get;
-                            break;
-                        case SD.ApiType.POST:
-                            message.Method = HttpMethod.Post;
-                            break;
-                        case SD.ApiType.PUT:
-                            message.Method = HttpMethod.Put;
-                            break;
-                        case SD.ApiType.DELETE:
-                            message.Method = HttpMethod.Delete;
-                            break;
-
-                    }
-                    return message;
-
+                 return   messageRequestBuilder.Build(apiRequest);
                 };
-                HttpResponseMessage apiResponse = null;
-                //if (!string.IsNullOrEmpty(apiRequest.Token))
-                if (withBearer && _tokenProvider.GetToken() != null)
-
+                HttpResponseMessage httpResponseMessage = null;
+                APIResponse finalApiResponse = new()
                 {
-                    var token = _tokenProvider.GetToken();
-                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.AccessToken);
-                }
-                apiResponse = await SendWithRefreshTokenAsync(client, messageFactory, withBearer);
-                var apiContent = await apiResponse.Content.ReadAsStringAsync();
+                    IsSuccess=false
+                };
+                ////if (!string.IsNullOrEmpty(apiRequest.Token))
+                //if (withBearer && _tokenProvider.GetToken() != null)
+
+                //{
+                //    var token = _tokenProvider.GetToken();
+                //    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.AccessToken);
+                //}
+                httpResponseMessage = await SendWithRefreshTokenAsync(client, messageFactory, withBearer);
+                //var apiContent = await httpResponseMessage.Content.ReadAsStringAsync();
 
                 try
                 {
-                    APIResponse ApiResponse = JsonConvert.DeserializeObject<APIResponse>(apiContent);
-                    if (apiResponse != null && (apiResponse.StatusCode == HttpStatusCode.BadRequest || apiResponse.StatusCode == HttpStatusCode.NotFound))
+                    switch (httpResponseMessage.StatusCode)
                     {
-                        ApiResponse.StatusCode = HttpStatusCode.BadRequest;
-                        ApiResponse.IsSuccess = false;
-                        var res = JsonConvert.SerializeObject(ApiResponse);
-                        var returnObject = JsonConvert.DeserializeObject<T>(res);
-                        return returnObject;
+                        case HttpStatusCode.NotFound:
+                            finalApiResponse.ErrorMessages = new List<string>() { "Not Found"};
+                            break;
+                        case HttpStatusCode.Forbidden:
+                            finalApiResponse.ErrorMessages = new List<string>() { "Access Denied" };
+                            break;
+                        case HttpStatusCode.Unauthorized:
+                            finalApiResponse.ErrorMessages = new List<string>() { "Unauthorized" };
+                            break;
+                        case HttpStatusCode.InternalServerError:
+                            finalApiResponse.ErrorMessages = new List<string>() { "Internal Server Error" };
+                            break;
+                        default:
+                            var apiContent = await httpResponseMessage.Content.ReadAsStringAsync();
+                            finalApiResponse.IsSuccess = true;
+                            finalApiResponse = JsonConvert.DeserializeObject<APIResponse>(apiContent);
+                            break;
+
+
                     }
+                  
+
+
+                    //if (httpResponseMessage != null && (httpResponseMessage.StatusCode == HttpStatusCode.BadRequest || httpResponseMessage.StatusCode == HttpStatusCode.NotFound))
+                    //{
+                    //    ApiResponse.StatusCode = HttpStatusCode.BadRequest;
+                    //    ApiResponse.IsSuccess = false;
+                    //    var res = JsonConvert.SerializeObject(ApiResponse);
+                    //    var returnObject = JsonConvert.DeserializeObject<T>(res);
+                    //    return returnObject;
+                    //}
                 }
                 catch (Exception ex)
                 {
-                    var exceptionResponse = JsonConvert.DeserializeObject<T>(apiContent);
-                    return exceptionResponse;
+                    finalApiResponse.ErrorMessages = new List<string>() { "Error Encountered",ex.Message.ToString()};
 
 
                 }
-                var APIResponse = JsonConvert.DeserializeObject<T>(apiContent);
-                return APIResponse;
+                var res = JsonConvert.SerializeObject(finalApiResponse);
+                var returnObject = JsonConvert.DeserializeObject<T>(res);
+                return returnObject;
+             
 
 
+            }
+            catch(AuthException )
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -188,6 +163,9 @@ namespace MagicVilla_Web.Services
                     return response;
 
 
+                }catch(AuthException )
+                {
+                    throw ;
                 }
                 catch (HttpRequestException ex)
                 {
@@ -213,10 +191,11 @@ namespace MagicVilla_Web.Services
             var response = await client.SendAsync(message);
             var content = await response.Content.ReadAsStringAsync();
             var apiResponse = JsonConvert.DeserializeObject<APIResponse>(content);
-            if (apiResponse?.IsSuccess != null)
+            if (apiResponse.IsSuccess)
             {
                 _tokenProvider.ClearToken();
                 await httpContextAccessor.HttpContext.SignOutAsync();
+                throw new AuthException();
             }
             else
             {

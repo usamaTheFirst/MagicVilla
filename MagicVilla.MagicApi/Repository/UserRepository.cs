@@ -151,7 +151,7 @@ namespace MagicVilla.MagicApi.Repository
                 _db.SaveChangesAsync();
             }
    
-            if (exisitingRefreshToken.ExpiresAt < DateTime.UnixEpoch)
+            if (exisitingRefreshToken.ExpiresAt < DateTime.UtcNow)
             {
                 exisitingRefreshToken.IsValid = false;
                 _db.SaveChanges();

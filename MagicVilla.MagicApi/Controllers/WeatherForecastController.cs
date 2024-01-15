@@ -29,5 +29,6 @@ namespace MagicVilla.MagicApi.Controllers
             })
             .ToArray();
         }
+      
     }
 }

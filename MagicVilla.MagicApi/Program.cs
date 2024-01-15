@@ -1,17 +1,21 @@
 using MagicVilla.MagicApi;
 using MagicVilla.MagicApi.Data;
+using MagicVilla.MagicApi.Filter;
 using MagicVilla.MagicApi.Logging;
 using MagicVilla.MagicApi.Models;
 using MagicVilla.MagicApi.Repository;
 using MagicVilla.MagicApi.Repository.IRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json;
 using Serilog;
 using System.Security.Cryptography;
 using System.Text;
+using MagicVilla.MagicApi.Extension;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,11 +25,19 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.Host.UseSerilog();
 builder.Services.AddControllers(options =>
 {
+    options.Filters.Add<CustomExceptionFIlter>();
+
     //options.CacheProfiles.Add("Default30", new Microsoft.AspNetCore.Mvc.CacheProfile
     //{
     //    Duration = 30
     //}); 
-}).AddNewtonsoftJson();
+}).AddNewtonsoftJson().ConfigureApiBehaviorOptions(options =>
+{
+    options.ClientErrorMapping[StatusCodes.Status500InternalServerError] = new Microsoft.AspNetCore.Mvc.ClientErrorData
+    {
+        Link = "https://www.usamafiaz.online/"
+    };
+});
 builder.Services.AddIdentity<ApplicationUser,IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddDbContext<ApplicationDbContext>(options=> options.UseSqlServer(builder.Configuration.GetConnectionString(("ApplicationDbContext"))));
 builder.Services.AddScoped<IVillaRepository, VillaRepository>();
@@ -58,7 +70,9 @@ builder.Services.AddAuthentication(x => { x.DefaultAuthenticateScheme = JwtBeare
         ValidateIssuerSigningKey = true,
         IssuerSigningKey  = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
         ValidateIssuer = false,
-        ValidateAudience = false
+        ValidateAudience = false,
+        ClockSkew = TimeSpan.Zero
+
 
     };
 }) ;
@@ -140,6 +154,9 @@ if (app.Environment.IsDevelopment())
 
     });
 }
+//app.UseExceptionHandler("/ErrorHandling/ProcessError");
+app.ErrorHandler();
+
 app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseAuthentication();

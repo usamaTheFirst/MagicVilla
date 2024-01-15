@@ -66,9 +66,6 @@ namespace MagicVilla.MagicApi.Controllers
             _response.Result = user;
             return Ok(_response);
         }
-
-
-
         [HttpPost("refresh")]
         public async Task<IActionResult> GetNewTokenFromRefreshToken([FromBody] TokenDTO tokenDTO)
         {
@@ -100,6 +97,19 @@ namespace MagicVilla.MagicApi.Controllers
            
         }
 
+        [HttpGet("Error")]
+        public async Task<IActionResult> Error()
+        {
+            throw new FileNotFoundException();
 
+        }
+
+
+        [HttpGet("ImageError")]
+        public async Task<IActionResult> ImageError()
+        {
+            throw new BadImageFormatException("Fake Image Exception");
+
+        }
     }
 }
