@@ -138,7 +138,7 @@ namespace MagicVilla_Web.Services
             else
             {
                 TokenDTO tokenDTO = _tokenProvider.GetToken();
-                if (tokenDTO != null && string.IsNullOrEmpty(tokenDTO.AccessToken))
+                if (tokenDTO != null && !string.IsNullOrEmpty(tokenDTO.AccessToken))
                 {
                     httpClient.DefaultRequestHeaders.Authorization =
                         new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokenDTO.AccessToken);

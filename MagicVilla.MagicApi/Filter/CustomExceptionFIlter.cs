@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace MagicVilla.MagicApi.Filter
 {
-    public class CustomExceptionFIlter : IActionFilter
+    public class CustomExceptionFilter : IActionFilter
     {
         public void OnActionExecuted(ActionExecutedContext context)
         {

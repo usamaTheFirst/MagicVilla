@@ -25,7 +25,7 @@ var builder = WebApplication.CreateBuilder(args);
 //builder.Host.UseSerilog();
 builder.Services.AddControllers(options =>
 {
-    options.Filters.Add<CustomExceptionFIlter>();
+    options.Filters.Add<CustomExceptionFilter>();
 
     //options.CacheProfiles.Add("Default30", new Microsoft.AspNetCore.Mvc.CacheProfile
     //{

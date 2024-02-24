@@ -22,10 +22,10 @@
             }
         }
 
-        private Task ProcessException(HttpContext context, Exception ex)
+        private async Task ProcessException(HttpContext context, Exception ex)
         {
             //throw new NotImplementedException();
-            context.Response.WriteAsync("There was an exception");
+         await   context.Response.WriteAsync("There was an exception");
         }
     }
 }
